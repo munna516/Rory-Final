@@ -39,7 +39,7 @@ app.use(
   })
 );
 
-
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
@@ -50,7 +50,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "OK" });
+  res.status(200).json({ status: "OK", message: "API is running" });
 });
 
 export default app;

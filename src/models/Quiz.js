@@ -9,7 +9,6 @@ const QuizSchema = new Schema({
     enum: ["pending", "processing", "done", "failed"],
     default: "pending"
   },
-
   song_count: { type: Number, default: 15 },
   vibe_details: { type: Object, default: null },
   is_premium_requested: Boolean,

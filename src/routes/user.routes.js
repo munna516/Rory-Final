@@ -9,7 +9,6 @@ import {
 
 const userRoutes = express.Router();
 
-// Unified routes for both user and admin
 userRoutes.post("/register", registerUser);
 userRoutes.post("/login", login);
 userRoutes.post("/forgot-password", forgotPassword);

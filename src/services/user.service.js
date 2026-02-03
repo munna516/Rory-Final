@@ -77,42 +77,6 @@ export const userService = {
         return { user: safeUser, token };
     },
 
-    loginAdmin: async (email, password) => {
-        const admin = await User.findOne({ email, role: "admin" });
-        if (!admin) {
-            const error = new Error("Admin not found");
-            throw error;
-        }
-
-        const isPasswordCorrect = await bcrypt.compare(password, admin.password);
-        if (!isPasswordCorrect) {
-            const error = new Error("Invalid password");
-            throw error;
-        }
-
-        if (!constants.JWT_SECRET) {
-            const error = new Error("JWT secret is not configured");
-            error.status = 500;
-            throw error;
-        }
-
-        const token = jwt.sign(
-            { id: admin._id, email: admin.email, role: admin.role },
-            constants.JWT_SECRET,
-            { expiresIn: constants.JWT_EXPIRES_IN }
-        );
-
-        // Remove sensitive fields before returning
-        const safeAdmin = {
-            id: admin._id,
-            email: admin.email,
-            role: admin.role,
-            createdAt: admin.createdAt,
-        };
-
-        return { admin: safeAdmin, token };
-    },
-
     forgotPassword: async (email, role = null) => {
         // Unified password reset for both user and admin
         // If role is provided, filter by role; otherwise allow any role except guest
@@ -190,6 +154,7 @@ export const userService = {
 
         return { success: true, message: "Password reset email sent successfully", status: 200 };
     },
+    
     verifyOTP: async (email, otp, role = null) => {
         // Unified OTP verification for both user and admin
         const query = role
