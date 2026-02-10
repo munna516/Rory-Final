@@ -13,9 +13,10 @@ export const adminAuthMiddleware = async (req, res, next) => {
     }
 
     const token = authHeader.split(" ")[1];
-
+ 
     // Verify JWT token
     const decoded = jwt.verify(token, constants.JWT_SECRET);
+    
 
     // Check if token has admin role
     if (decoded.role !== "admin") {
@@ -24,6 +25,7 @@ export const adminAuthMiddleware = async (req, res, next) => {
 
     // Attach admin to request (using User model with admin role)
     const admin = await User.findOne({ _id: decoded.id, role: "admin" }).select("-password");
+
 
     if (!admin) {
       return errorResponse(res, 401, "Invalid token: Admin does not exist");
