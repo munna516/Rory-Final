@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
 import routes from "./routes/index.js";
 import paymentRoutes from "./routes/payment.routes.js";
 
@@ -42,6 +43,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use("/uploads", express.static(path.resolve("uploads")));
 
 app.use("/api/v1", routes);
 

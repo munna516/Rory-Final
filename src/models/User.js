@@ -6,6 +6,7 @@ const UserSchema = new Schema(
         name: { type: String },
         email: { type: String, unique: true, required: true },
         password: { type: String, },
+        profileImage: { type: String, default: null },
         role: { type: String, enum: ["guest", "user", "admin"], default: "guest" },
         isPremium: { type: Boolean, default: false },
         isOTPVerified: {
