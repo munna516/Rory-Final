@@ -1,510 +1,335 @@
-# Soundtrack My Night - Backend API
+# Soundtrack My Night — Backend API
 
-A Node.js/Express REST API for generating personalized music playlists based on user preferences. The system supports both guest and registered users, with premium playlist generation through Stripe payment integration.
+REST API for the **Soundtrack My Night** playlist quiz platform.  
+Built with **Node.js**, **Express 5**, **MongoDB (Mongoose)**, and **Stripe** for payments.
 
-## 🎯 Features
+---
 
-- **User Authentication**: JWT-based authentication for registered users
-- **Password Reset**: OTP-based password reset functionality
-- **Guest Quiz Submission**: Allow users to submit quizzes without registration
-- **AI-Powered Playlist Generation**: Integration with external AI service for personalized playlists
-- **Stripe Payment Integration**: Secure payment processing for premium playlists (50 songs)
-- **Email Notifications**: Automated email delivery with playlist links
-- **Dual Playlist Types**: 
-  - Default playlists (15 songs) - Free
-  - Premium playlists (50 songs) - Paid
-- **Webhook Processing**: Asynchronous premium playlist generation via Stripe webhooks
+## Table of Contents
 
-## 🛠️ Tech Stack
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Response Format](#response-format)
+- [Authentication](#authentication)
+- [API Reference](#api-reference)
+  - [Health](#health)
+  - [Auth](#auth)
+  - [Quiz](#quiz)
+  - [Playlists](#playlists)
+  - [Payments (Stripe Webhook)](#payments-stripe-webhook)
+  - [Admin](#admin)
 
-- **Runtime**: Node.js
-- **Framework**: Express.js 5.x
-- **Database**: MongoDB with Mongoose
-- **Authentication**: JWT (jsonwebtoken)
-- **Payment**: Stripe
-- **Email**: Nodemailer (Hostinger SMTP)
-- **HTTP Client**: Axios
-- **Security**: bcryptjs for password hashing
+---
 
-## 📋 Prerequisites
+## Getting Started
 
-- Node.js (v14 or higher)
-- MongoDB database (local or cloud instance)
-- Stripe account with API keys
-- Hostinger email account (or SMTP credentials)
-- AI service endpoint for playlist generation
+```bash
+# Install dependencies
+npm install
 
-## 🚀 Getting Started
+# Development (with hot-reload)
+npm run dev
 
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd roryclerk-01
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Create `.env` file** in the root directory:
-   ```env
-   # Server Configuration
-   PORT=3000
-   FRONTEND_URL=https://your-frontend-url.com
-   
-   # Database
-   MONGO_URI=mongodb://localhost:27017/roryclerk
-   # OR for MongoDB Atlas:
-   # MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/dbname
-   
-   # JWT Configuration
-   JWT_SECRET=your-super-secret-jwt-key-here
-   JWT_EXPIRES_IN=7d
-   
-   # CORS (Optional - defaults to *)
-   ALLOWED_ORIGIN=https://soundtrackmynight.com
-   
-   # Email Configuration (Hostinger SMTP)
-   EMAIL_USER=info@soundtrackmynight.com
-   EMAIL_PASS=your-email-password
-   
-   # Stripe Configuration
-   STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
-   STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
-   
-   # AI Service Endpoint
-   AI_ENDPOINT=http://your-ai-service-url:port
-   ```
-
-4. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-   The server will start with nodemon for auto-reloading.
-
-5. **Start the production server**
-   ```bash
-   npm start
-   ```
-
-## 📁 Project Structure
-
-```
-roryclerk-01/
-├── src/
-│   ├── app.js                 # Express app configuration
-│   ├── server.js              # Server entry point
-│   ├── config/
-│   │   ├── constant.js       # Environment variables
-│   │   └── dbConnect.js      # MongoDB connection
-│   ├── controllers/
-│   │   ├── payment.controller.js
-│   │   ├── playlist.controller.js
-│   │   ├── quiz.controller.js
-│   │   └── user.controller.js
-│   ├── middlewares/
-│   │   └── auth.js           # JWT authentication middleware
-│   ├── models/
-│   │   ├── Playlist.js
-│   │   ├── Quiz.js
-│   │   └── User.js
-│   ├── routes/
-│   │   ├── index.js
-│   │   ├── payment.routes.js
-│   │   ├── playlist.routes.js
-│   │   ├── quiz.routes.js
-│   │   └── user.routes.js
-│   ├── services/
-│   │   ├── playlist.service.js
-│   │   ├── quiz.service.js
-│   │   └── user.service.js
-│   └── utils/
-│       ├── email.js          # Email sending utility
-│       └── response.js       # Standardized response helpers
-├── .env                      # Environment variables (not in git)
-├── package.json
-└── README.md
+# Production
+npm start
 ```
 
-## 🔐 Environment Variables
+The server starts on the port defined by `PORT` (default `3000`).
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `PORT` | Server port number | No | `3000` |
-| `MONGO_URI` | MongoDB connection string | Yes | - |
-| `JWT_SECRET` | Secret key for JWT token generation | Yes | - |
-| `JWT_EXPIRES_IN` | JWT token expiration time | Yes | - |
-| `FRONTEND_URL` | Frontend application URL | Yes | - |
-| `ALLOWED_ORIGIN` | CORS allowed origin | No | `*` |
-| `EMAIL_USER` | Email address for sending emails | Yes | - |
-| `EMAIL_PASS` | Email password | Yes | - |
-| `STRIPE_SECRET_KEY` | Stripe secret key | Yes | - |
-| `STRIPE_WEBHOOK_SECRET` | Stripe webhook secret | Yes | - |
-| `AI_ENDPOINT` | AI service endpoint URL | Yes | - |
+---
 
-## 📡 Complete API Documentation
+## Environment Variables
+
+Create a `.env` file in the project root:
+
+| Variable                | Description                          |
+| ----------------------- | ------------------------------------ |
+| `PORT`                  | Server port (default `3000`)         |
+| `MONGO_URI`             | MongoDB connection string            |
+| `JWT_SECRET`            | Secret key for JWT signing           |
+| `JWT_EXPIRES_IN`        | JWT expiration (e.g. `30d`)          |
+| `FRONTEND_URL`          | Frontend origin URL                  |
+| `EMAIL_USER`            | SMTP email address                   |
+| `EMAIL_PASS`            | SMTP email password / app password   |
+| `STRIPE_SECRET_KEY`     | Stripe secret key                    |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret        |
+| `AI_ENDPOINT`           | AI playlist generation service URL   |
+
+---
+
+## Response Format
+
+All endpoints return a consistent JSON envelope:
+
+**Success**
+
+```json
+{
+  "success": true,
+  "message": "...",
+  "data": { }
+}
+```
+
+**Error**
+
+```json
+{
+  "success": false,
+  "message": "..."
+}
+```
+
+---
+
+## Authentication
+
+Protected routes require a **Bearer token** in the `Authorization` header:
+
+```
+Authorization: Bearer <token>
+```
+
+- **User routes** use `authMiddleware` (roles: `user`)
+- **Admin routes** use `adminAuthMiddleware` (role: `admin`)
+
+Tokens are issued via the [Login](#2-login) endpoint.
+
+---
+
+## API Reference
 
 Base URL: `/api/v1`
 
 ---
 
-## 🔐 Authentication Routes
+### Health
 
-Base path: `/api/v1/auth/users`
+| Method | Endpoint  | Description          |
+| ------ | --------- | -------------------- |
+| GET    | `/`       | Welcome message      |
+| GET    | `/health` | API health check     |
 
-### 1. Register User
+---
 
-**Endpoint:** `POST /api/v1/auth/users/register`
+### Auth
 
-**Description:** Register a new user or upgrade a guest user to a registered user.
+Base path: `/api/v1/auth`
 
-**Authentication:** Not required
+#### 1. Register
 
-**Request Body:**
-```json
-{
-  "name": "string (required)",
-  "email": "string (required, unique)",
-  "password": "string (required)"
-}
+```
+POST /api/v1/auth/register
 ```
 
-**Example Request:**
+| Field      | Type   | Required | Description        |
+| ---------- | ------ | -------- | ------------------ |
+| `name`     | string | Yes      | User's full name   |
+| `email`    | string | Yes      | User's email       |
+| `password` | string | Yes      | User's password    |
+
+**Request Body**
+
 ```json
 {
   "name": "John Doe",
   "email": "john@example.com",
-  "password": "securepassword123"
+  "password": "securePassword123"
 }
 ```
 
-**Success Response (201):**
+**Response** `201 Created`
+
 ```json
 {
   "success": true,
   "message": "User registered successfully",
   "data": {
-    "_id": "user_id",
+    "_id": "...",
     "name": "John Doe",
     "email": "john@example.com",
-    "type": "user",
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z"
+    "role": "user"
   }
 }
 ```
-
-**Error Responses:**
-- **400 Bad Request:**
-  ```json
-  {
-    "success": false,
-    "message": "Name, email and password are required"
-  }
-  ```
-- **400 Bad Request (User exists):**
-  ```json
-  {
-    "success": false,
-    "message": "User already exists"
-  }
-  ```
 
 ---
 
-### 2. Login User
+#### 2. Login
 
-**Endpoint:** `POST /api/v1/auth/users/login`
+Unified login for both **user** and **admin** accounts. The role is determined from the database.
 
-**Description:** Authenticate a user and return a JWT token. Token is also set as an HTTP-only cookie.
-
-**Authentication:** Not required
-
-**Request Body:**
-```json
-{
-  "email": "string (required)",
-  "password": "string (required)"
-}
+```
+POST /api/v1/auth/login
 ```
 
-**Example Request:**
+| Field      | Type   | Required | Description     |
+| ---------- | ------ | -------- | --------------- |
+| `email`    | string | Yes      | Account email   |
+| `password` | string | Yes      | Account password|
+
+**Request Body**
+
 ```json
 {
   "email": "john@example.com",
-  "password": "securepassword123"
+  "password": "securePassword123"
 }
 ```
 
-**Success Response (200):**
+**Response** `200 OK`
+
 ```json
 {
   "success": true,
   "message": "User logged in successfully",
   "data": {
     "user": {
-      "id": "user_id",
+      "id": "...",
       "name": "John Doe",
       "email": "john@example.com",
+      "role": "user",
       "isPremium": false,
-      "createdAt": "2024-01-01T00:00:00.000Z"
+      "createdAt": "2026-01-15T10:00:00.000Z"
     },
-    "token": "jwt_token_here"
+    "token": "eyJhbGciOiJI..."
   }
 }
 ```
 
-**Note:** Token is also set as an HTTP-only cookie named `token`.
-
-**Error Responses:**
-- **400 Bad Request:**
-  ```json
-  {
-    "success": false,
-    "message": "Email and password are required"
-  }
-  ```
-- **400 Bad Request (User not found):**
-  ```json
-  {
-    "success": false,
-    "message": "User not found"
-  }
-  ```
-- **400 Bad Request (Invalid password):**
-  ```json
-  {
-    "success": false,
-    "message": "Invalid password"
-  }
-  ```
+> For admin accounts, the message will be `"Admin logged in successfully"` and `role` will be `"admin"`.
 
 ---
 
-### 3. Forgot Password
+#### 3. Forgot Password
 
-**Endpoint:** `POST /api/v1/auth/users/forgot-password`
+Sends a 6-digit OTP to the user's email. Works for both user and admin.
 
-**Description:** Send a password reset OTP to the user's email. OTP expires in 10 minutes.
-
-**Authentication:** Not required
-
-**Request Body:**
-```json
-{
-  "email": "string (required)"
-}
+```
+POST /api/v1/auth/forgot-password
 ```
 
-**Example Request:**
+| Field   | Type   | Required | Description          |
+| ------- | ------ | -------- | -------------------- |
+| `email` | string | Yes      | Registered email     |
+
+**Request Body**
+
 ```json
 {
   "email": "john@example.com"
 }
 ```
 
-**Success Response (200):**
+**Response** `200 OK`
+
 ```json
 {
   "success": true,
-  "message": "Password reset email sent successfully",
-  "data": {
-    "success": true,
-    "message": "Password reset email sent successfully",
-    "status": 200
-  }
+  "message": "Password reset email sent successfully"
 }
 ```
-
-**Error Responses:**
-- **400 Bad Request:**
-  ```json
-  {
-    "success": false,
-    "message": "Email is required"
-  }
-  ```
-- **400 Bad Request (User not found):**
-  ```json
-  {
-    "success": false,
-    "message": "User not found"
-  }
-  ```
 
 ---
 
-### 4. Verify OTP
+#### 4. Verify OTP
 
-**Endpoint:** `POST /api/v1/auth/users/verify-otp`
+Verifies the OTP sent via email.
 
-**Description:** Verify the OTP sent to the user's email for password reset.
-
-**Authentication:** Not required
-
-**Request Body:**
-```json
-{
-  "email": "string (required)",
-  "otp": "number (required, 6 digits)"
-}
+```
+POST /api/v1/auth/verify-otp
 ```
 
-**Example Request:**
+| Field   | Type   | Required | Description              |
+| ------- | ------ | -------- | ------------------------ |
+| `email` | string | Yes      | Registered email         |
+| `otp`   | string | Yes      | 6-digit OTP from email   |
+
+**Request Body**
+
 ```json
 {
   "email": "john@example.com",
-  "otp": 123456
+  "otp": "482916"
 }
 ```
 
-**Success Response (200):**
+**Response** `200 OK`
+
 ```json
 {
   "success": true,
-  "message": "OTP verified successfully",
-  "data": {
-    "success": true,
-    "message": "OTP verified successfully",
-    "status": 200
-  }
+  "message": "OTP verified successfully"
 }
 ```
-
-**Error Responses:**
-- **400 Bad Request:**
-  ```json
-  {
-    "success": false,
-    "message": "Email and OTP are required"
-  }
-  ```
-- **400 Bad Request (Invalid OTP):**
-  ```json
-  {
-    "success": false,
-    "message": "Invalid OTP"
-  }
-  ```
-- **400 Bad Request (OTP expired):**
-  ```json
-  {
-    "success": false,
-    "message": "OTP expired"
-  }
-  ```
 
 ---
 
-### 5. Reset Password
+#### 5. Reset Password
 
-**Endpoint:** `POST /api/v1/auth/users/reset-password`
+Resets the password after OTP verification.
 
-**Description:** Reset the user's password after OTP verification. Requires OTP to be verified first.
-
-**Authentication:** Not required
-
-**Request Body:**
-```json
-{
-  "email": "string (required)",
-  "newPassword": "string (required)"
-}
+```
+POST /api/v1/auth/reset-password
 ```
 
-**Example Request:**
+| Field         | Type   | Required | Description     |
+| ------------- | ------ | -------- | --------------- |
+| `email`       | string | Yes      | Registered email|
+| `newPassword` | string | Yes      | New password    |
+
+**Request Body**
+
 ```json
 {
   "email": "john@example.com",
-  "newPassword": "newsecurepassword123"
+  "newPassword": "newSecurePassword456"
 }
 ```
 
-**Success Response (200):**
+**Response** `200 OK`
+
 ```json
 {
   "success": true,
-  "message": "Password reset successfully",
-  "data": {
-    "success": true,
-    "message": "Password reset successfully",
-    "status": 200
-  }
+  "message": "Password reset successfully"
 }
 ```
 
-**Error Responses:**
-- **400 Bad Request:**
-  ```json
-  {
-    "success": false,
-    "message": "Email and password are required"
-  }
-  ```
-- **400 Bad Request (User not found or OTP not verified):**
-  ```json
-  {
-    "success": false,
-    "message": "User not found"
-  }
-  ```
-
 ---
 
-## 🎵 Quiz Routes
+### Quiz
 
 Base path: `/api/v1/quiz`
 
-### 6. Submit Guest Quiz
+#### 1. Submit Guest Quiz
 
-**Endpoint:** `POST /api/v1/quiz/guest/submit`
+Processes a quiz for a guest (no auth required). Generates a free playlist and sends it via email.
 
-**Description:** Submit a quiz as a guest user. Creates a guest user if email doesn't exist, generates a default playlist (15 songs), and sends an email with the playlist link.
-
-**Authentication:** Not required
-
-**Request Body:**
-```json
-{
-  "email": "string (required)",
-  "answers": {
-    "q1": "string",
-    "q2": "string",
-    "q3": "string",
-    "q4": "string",
-    "q5": "string",
-    "q6": "string",
-    "q7": ["string", "string"],
-    "q8": ["string", "string"],
-    "q9": "string",
-    "q10": "string"
-  }
-}
+```
+POST /api/v1/quiz/guest/submit
 ```
 
-**Example Request:**
+| Field     | Type   | Required | Description                  |
+| --------- | ------ | -------- | ---------------------------- |
+| `email`   | string | Yes      | Guest email to send playlist |
+| `answers` | object | Yes      | Quiz answers object          |
+
+**Request Body**
+
 ```json
 {
   "email": "guest@example.com",
   "answers": {
-    "q1": "Wedding (Evening party)",
-    "q2": "High-energy",
-    "q3": "Champagne",
-    "q4": "26-35",
-    "q5": "ABBA",
-    "q6": "Absolutely",
-    "q7": ["70s", "90s", "00s"],
-    "q8": ["Pop", "Chart"],
-    "q9": "Up and bouncing",
-    "q10": "No heavy metal"
+    "mood": "chill",
+    "genre": "jazz",
+    "occasion": "dinner"
   }
 }
 ```
 
-**Success Response (200):**
+**Response** `200 OK`
+
 ```json
 {
   "success": true,
@@ -512,672 +337,456 @@ Base path: `/api/v1/quiz`
 }
 ```
 
-**Error Responses:**
-- **400 Bad Request:**
-  ```json
-  {
-    "success": false,
-    "message": "Email is required"
-  }
-  ```
-- **500 Internal Server Error:**
-  ```json
-  {
-    "success": false,
-    "message": "Failed to process quiz"
-  }
-  ```
-
-**Notes:**
-- Creates a guest user automatically if email doesn't exist
-- Generates a default playlist with 15 songs
-- Sends email notification with playlist link
-- Quiz status: `processing` → `done` or `failed`
-
 ---
 
-### 7. Submit User Quiz
+#### 2. Submit User Quiz
 
-**Endpoint:** `POST /api/v1/quiz/user/submit`
+Processes a quiz for an authenticated user. For `"free"` type, generates immediately. For `"paid"` type, creates a Stripe checkout session.
 
-**Description:** Submit a quiz as an authenticated user. Can request a premium playlist (50 songs) which requires payment, or get a default playlist (15 songs) immediately.
-
-**Authentication:** Required (Bearer token)
-
-**Headers:**
 ```
-Authorization: Bearer <jwt_token>
-Content-Type: application/json
+POST /api/v1/quiz/user/submit
 ```
 
-**Request Body:**
+**Auth:** Bearer Token (User)
+
+| Field       | Type   | Required | Description                        |
+| ----------- | ------ | -------- | ---------------------------------- |
+| `answers`   | object | Yes      | Quiz answers object                |
+| `user_type` | string | Yes      | `"free"` or `"paid"`              |
+
+**Request Body**
+
 ```json
 {
   "answers": {
-    "q1": "string",
-    "q2": "string",
-    "q3": "string",
-    "q4": "string",
-    "q5": "string",
-    "q6": "string",
-    "q7": ["string", "string"],
-    "q8": ["string", "string"],
-    "q9": "string",
-    "q10": "string"
-  },
-  "user_type": "string (required, enum: ['free', 'paid'])"
-}
-```
-
-**Example Request (Free Playlist):**
-```json
-{
-  "answers": {
-    "q1": "Wedding (Evening party)",
-    "q2": "High-energy",
-    "q3": "Champagne",
-    "q4": "26-35",
-    "q5": "ABBA",
-    "q6": "Absolutely",
-    "q7": ["70s", "90s", "00s"],
-    "q8": ["Pop", "Chart"],
-    "q9": "Up and bouncing",
-    "q10": "No heavy metal"
+    "mood": "energetic",
+    "genre": "pop",
+    "occasion": "wedding"
   },
   "user_type": "free"
 }
 ```
 
-**Example Request (Premium Playlist):**
-```json
-{
-  "answers": {
-    "q1": "Wedding (Evening party)",
-    "q2": "High-energy",
-    "q3": "Champagne",
-    "q4": "26-35",
-    "q5": "ABBA",
-    "q6": "Absolutely",
-    "q7": ["70s", "90s", "00s"],
-    "q8": ["Pop", "Chart"],
-    "q9": "Up and bouncing",
-    "q10": "No heavy metal"
-  },
-  "user_type": "paid"
-}
-```
+**Response (free)** `200 OK`
 
-**Success Response - Free (200):**
 ```json
 {
   "success": true,
   "message": "Quiz submitted successfully",
   "data": {
     "type": "default",
-    "playlist": {
-      "_id": "playlist_id",
-      "quizId": "quiz_id",
-      "userId": "user_id",
-      "title": "Golden Nostalgia Party Mix",
-      "description": "A nostalgic blend of 70s, 80s, 90s and modern dance-pop...",
-      "tracks": [
-        {
-          "artist": "ABBA",
-          "song": "Dancing Queen"
-        }
-      ],
-      "spotify_url": "https://open.spotify.com/playlist/...",
-      "song_count": 15,
-      "playlist_type": "default",
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z"
-    },
-    "quizId": "quiz_id"
+    "playlist": { },
+    "quizId": "..."
   }
 }
 ```
 
-**Success Response - Premium (200):**
+**Response (paid)** `200 OK`
+
 ```json
 {
   "success": true,
   "message": "Quiz submitted successfully",
   "data": {
     "type": "premium_payment",
-    "checkoutUrl": "https://checkout.stripe.com/pay/cs_test_...",
-    "quizId": "quiz_id"
+    "checkoutUrl": "https://checkout.stripe.com/...",
+    "quizId": "..."
   }
 }
 ```
 
-**Error Responses:**
-- **401 Unauthorized:**
-  ```json
-  {
-    "success": false,
-    "message": "Unauthorized"
-  }
-  ```
-- **500 Internal Server Error:**
-  ```json
-  {
-    "success": false,
-    "message": "Error message"
-  }
-  ```
-
-**Notes:**
-- `user_type: "free"` → Generates playlist immediately (15 songs)
-- `user_type: "paid"` → Creates Stripe checkout session (50 songs after payment)
-- Premium playlists are generated via webhook after successful payment
-- Quiz status for premium: `pending` → `done` (after webhook)
-
 ---
 
-## 🎶 Playlist Routes
+### Playlists
 
 Base path: `/api/v1/playlists`
 
-### 8. Get Guest Playlist
+#### 1. Get Guest Playlist
 
-**Endpoint:** `GET /api/v1/playlists/guest/playlist/:id`
+Fetches a playlist by quiz ID (no auth required).
 
-**Description:** Retrieve a playlist by quiz ID (for guest users).
-
-**Authentication:** Not required
-
-**URL Parameters:**
-- `id` (string, required) - Quiz ID
-
-**Example Request:**
 ```
-GET /api/v1/playlists/guest/playlist/507f1f77bcf86cd799439011
+GET /api/v1/playlists/guest/playlist/:id
 ```
 
-**Success Response (200):**
+| Param | Type   | Required | Description |
+| ----- | ------ | -------- | ----------- |
+| `id`  | string | Yes      | Quiz ID     |
+
+**Response** `200 OK`
+
 ```json
 {
   "success": true,
   "message": "Guest playlist fetched successfully",
   "data": {
-    "_id": "playlist_id",
-    "quizId": "quiz_id",
-    "userId": "user_id",
-    "title": "Golden Nostalgia Party Mix",
-    "description": "A nostalgic blend of 70s, 80s, 90s and modern dance-pop...",
-    "tracks": [
-      {
-        "artist": "ABBA",
-        "song": "Dancing Queen"
-      }
-    ],
-    "spotify_url": "https://open.spotify.com/playlist/...",
+    "_id": "...",
+    "quizId": "...",
+    "title": "Groovy Sunset Vibes",
+    "description": "...",
+    "tracks": [],
+    "spotify_url": "https://open.spotify.com/...",
     "song_count": 15,
-    "playlist_type": "default",
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z"
+    "playlist_type": "default"
   }
 }
 ```
 
-**Error Responses:**
-- **404 Not Found:**
-  ```json
-  {
-    "success": false,
-    "message": "Playlist not found"
-  }
-  ```
-
 ---
 
-### 9. Get User Playlist
+#### 2. Get User Playlists
 
-**Endpoint:** `GET /api/v1/playlists/user/playlist`
+Fetches all playlists for the authenticated user.
 
-**Description:** Retrieve all playlists for the authenticated user, sorted by creation date (oldest first).
-
-**Authentication:** Required (Bearer token)
-
-**Headers:**
-```
-Authorization: Bearer <jwt_token>
-```
-
-**Example Request:**
 ```
 GET /api/v1/playlists/user/playlist
 ```
 
-**Success Response (200):**
+**Auth:** Bearer Token (User)
+
+**Response** `200 OK`
+
 ```json
 {
   "success": true,
   "message": "User playlist fetched successfully",
   "data": [
     {
-      "_id": "playlist_id",
-      "quizId": "quiz_id",
-      "userId": "user_id",
-      "title": "Golden Nostalgia Party Mix",
-      "description": "A nostalgic blend of 70s, 80s, 90s and modern dance-pop...",
-      "tracks": [
-        {
-          "artist": "ABBA",
-          "song": "Dancing Queen"
-        }
-      ],
-      "spotify_url": "https://open.spotify.com/playlist/...",
-      "song_count": 15,
+      "_id": "...",
+      "title": "Groovy Sunset Vibes",
       "playlist_type": "default",
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z"
-    },
-    {
-      "_id": "playlist_id_2",
-      "playlist_type": "premium",
-      "song_count": 50,
-      ...
+      "song_count": 15
     }
   ]
 }
 ```
 
-**Error Responses:**
-- **401 Unauthorized:**
-  ```json
-  {
-    "success": false,
-    "message": "Unauthorized"
-  }
-  ```
-- **404 Not Found:**
-  ```json
-  {
-    "success": false,
-    "message": "Playlist not found"
-  }
-  ```
-
-**Notes:**
-- Returns all playlists (both default and premium) for the authenticated user
-- Sorted by creation date (oldest first)
-
 ---
 
-## 💳 Payment Routes
+#### 3. Upgrade Playlist
 
-Base path: `/api/v1/stripe/payment`
+Upgrades a free playlist to premium. Deletes the old quiz/playlist and initiates a paid quiz flow (returns Stripe checkout URL).
 
-### 10. Stripe Webhook
-
-**Endpoint:** `POST /api/v1/stripe/payment/webhook`
-
-**Description:** Stripe webhook endpoint to handle payment events. Processes `checkout.session.completed` events to generate premium playlists after successful payment.
-
-**Authentication:** Not required (uses Stripe signature verification)
-
-**Headers:**
 ```
-stripe-signature: <stripe_signature>
-Content-Type: application/json
+POST /api/v1/playlists/upgrade
 ```
 
-**Request Body:** Raw JSON body (Stripe event object)
+**Auth:** Bearer Token (User)
 
-**Note:** This endpoint uses `express.raw({ type: "application/json" })` middleware to receive the raw body required for Stripe signature verification.
+| Field        | Type   | Required | Description              |
+| ------------ | ------ | -------- | ------------------------ |
+| `quizId`     | string | Yes      | Original quiz ID         |
+| `playlistId` | string | Yes      | Original playlist ID     |
 
-**Webhook Event Handled:**
-- `checkout.session.completed` - Creates a premium playlist (50 songs) after successful payment
+**Request Body**
 
-**Expected Metadata in Stripe Session:**
 ```json
 {
-  "quizId": "quiz_id",
-  "userId": "user_id",
-  "premium": "true"
+  "quizId": "64abc...",
+  "playlistId": "64def..."
 }
 ```
 
-**Success Response (200):**
+**Response** `200 OK`
+
 ```json
 {
   "success": true,
-  "message": "Premium playlist generated successfully"
-}
-```
-
-**Error Responses:**
-- **400 Bad Request:**
-  ```json
-  {
-    "success": false,
-    "message": "Webhook Error"
+  "message": "Quiz submitted successfully",
+  "data": {
+    "type": "premium_payment",
+    "checkoutUrl": "https://checkout.stripe.com/...",
+    "quizId": "..."
   }
-  ```
-
-**Notes:**
-- Returns 200 OK immediately to Stripe
-- Heavy processing (AI calls, DB operations) happens asynchronously
-- Includes idempotency check to prevent duplicate playlists
-- Errors are logged but don't cause webhook retries
-
----
-
-## 🏠 Root Routes
-
-### 11. Welcome Route
-
-**Endpoint:** `GET /`
-
-**Description:** Welcome message for the API.
-
-**Authentication:** Not required
-
-**Success Response (200):**
-```json
-{
-  "message": "Welcome to the Rory Backend"
 }
 ```
 
 ---
 
-### 12. Health Check
+### Payments (Stripe Webhook)
 
-**Endpoint:** `GET /health`
-
-**Description:** Health check endpoint to verify API is running.
-
-**Authentication:** Not required
-
-**Success Response (200):**
-```json
-{
-  "status": "OK"
-}
 ```
+POST /api/v1/stripe/payment/webhook
+```
+
+> This endpoint is called by **Stripe** and uses the raw request body for signature verification. Do not call this manually.
+
+| Header             | Description                      |
+| ------------------ | -------------------------------- |
+| `stripe-signature` | Stripe webhook signature header  |
+
+Handles `checkout.session.completed` events to generate premium playlists after successful payment.
 
 ---
 
-## 🔄 Webhook Architecture
+### Admin
 
-The Stripe webhook handler follows best practices:
+Base path: `/api/v1/admin`
 
-1. **Immediate Response**: Returns 200 OK immediately to Stripe
-2. **Background Processing**: Heavy work (AI calls, DB operations) runs asynchronously
-3. **Idempotency**: Prevents duplicate playlist creation
-4. **Error Handling**: Errors are logged but don't cause webhook retries
-
-**Flow:**
-```
-Stripe → Webhook → Verify Signature → Return 200 OK
-                              ↓
-                    Background Processing
-                              ↓
-                    AI Service → Create Playlist → Update Quiz
-```
+All admin routes require **Admin Bearer Token** (`Authorization: Bearer <admin_token>`).
 
 ---
 
-## 📊 Data Models
+#### 1. Get Dashboard
 
-### User
-```javascript
-{
-  name: String,
-  email: String (unique, required),
-  password: String (hashed),
-  role: String (enum: ["guest", "user", "admin"], default: "guest"),
-  passwordResetOTP: String,
-  passwordResetExpires: Date,
-  isOTPVerified: Boolean,
-  isPremium: Boolean,
-  createdAt: Date,
-  updatedAt: Date
-}
+Returns platform overview stats and the 5 most recent playlist activities.
+
+```
+GET /api/v1/admin/dashboard
 ```
 
-### Quiz
-```javascript
-{
-  userId: ObjectId (ref: "User"),
-  answers: Object (required),
-  status: String (enum: ["pending", "processing", "done", "failed"]),
-  song_count: Number (default: 15),
-  vibe_details: Object,
-  is_premium_requested: Boolean,
-  createdAt: Date,
-  updatedAt: Date
-}
-```
+**Response** `200 OK`
 
-### Playlist
-```javascript
-{
-  quizId: ObjectId (ref: "Quiz", unique),
-  userId: ObjectId (ref: "User"),
-  title: String,
-  description: String,
-  tracks: Array,
-  spotify_url: String,
-  song_count: Number,
-  playlist_type: String (enum: ["default", "premium"]),
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
----
-
-## 🔒 Authentication
-
-Protected routes require a JWT token in the Authorization header:
-
-```http
-Authorization: Bearer <jwt_token>
-```
-
-**Protected Routes:**
-- `POST /api/v1/quiz/user/submit`
-- `GET /api/v1/playlists/user/playlist`
-
-**Authentication Errors:**
-- `401 Unauthorized` - No token provided
-- `401 Unauthorized` - Invalid/expired token
-
-**JWT Token Format:**
-- Contains: `id` (user ID), `email` (user email)
-- Expires: Based on `JWT_EXPIRES_IN` environment variable (default: 7d)
-
----
-
-## 📧 Email Configuration
-
-The application uses **Hostinger SMTP** for sending emails:
-
-- **Host**: `smtp.hostinger.com`
-- **Port**: `587`
-- **Encryption**: STARTTLS
-- **Authentication**: Required
-
-**Email Templates:**
-- Guest playlist completion notifications
-- Password reset OTP codes
-
----
-
-## ⚠️ Error Handling
-
-All API responses follow a consistent format:
-
-**Success Response:**
 ```json
 {
   "success": true,
-  "message": "Success message",
-  "data": { ... }
+  "message": "Dashboard fetched successfully",
+  "data": {
+    "totals": {
+      "totalUsers": 2847,
+      "totalPlaylists": 1392,
+      "totalQuizzes": 1500,
+      "paidUsers": 643,
+      "freeUsers": 2204
+    },
+    "recentActivity": [
+      {
+        "user": "rakibul@example.com",
+        "playlistTitle": "Groovy Sunset Vibes",
+        "type": "Free",
+        "date": "2026-02-03T14:28:47.857Z",
+        "playlistId": "..."
+      }
+    ]
+  }
 }
 ```
 
-**Error Response:**
+---
+
+#### 2. Get Users
+
+Returns all non-admin users with quiz completion date, playlist count, and paid/free status.
+
+```
+GET /api/v1/admin/users
+```
+
+**Response** `200 OK`
+
 ```json
 {
-  "success": false,
-  "message": "Error message"
+  "success": true,
+  "message": "Users fetched successfully",
+  "data": [
+    {
+      "_id": "...",
+      "email": "sarah@example.com",
+      "name": "Sarah Johnson",
+      "createdAt": "2026-01-24T10:00:00.000Z",
+      "quizCompletedAt": "2026-01-24T12:00:00.000Z",
+      "playlistCount": 3,
+      "status": "Paid"
+    }
+  ]
 }
 ```
 
-**HTTP Status Codes:**
-- `200` - Success
-- `201` - Created
-- `400` - Bad Request
-- `401` - Unauthorized
-- `404` - Not Found
-- `500` - Internal Server Error
-
 ---
 
-## 🚨 Common Issues & Solutions
+#### 3. Delete User
 
-### 1. AI Service Connection Errors
-**Error**: `ECONNRESET` or `socket hang up`
+Deletes a user by ID.
 
-**Solutions:**
-- Verify `AI_ENDPOINT` is correct and accessible
-- Check AI service is running
-- Ensure network/firewall allows connections
-- Check AI service logs for errors
-
-### 2. Stripe Webhook Failures
-**Error**: Webhook signature verification fails
-
-**Solutions:**
-- Ensure `STRIPE_WEBHOOK_SECRET` matches Stripe dashboard
-- Verify webhook endpoint uses raw body parsing
-- Check webhook URL is publicly accessible
-- Verify webhook is configured in Stripe dashboard
-
-### 3. Email Sending Failures
-**Error**: Email not sent
-
-**Solutions:**
-- Verify Hostinger SMTP credentials
-- Check email account is active
-- Ensure port 587 is not blocked
-- Verify `EMAIL_USER` and `EMAIL_PASS` are correct
-
-### 4. Authentication Errors
-**Error**: `401 Unauthorized`
-
-**Solutions:**
-- Verify JWT token is included in Authorization header
-- Check token hasn't expired
-- Ensure `JWT_SECRET` matches between token creation and verification
-- Verify token format: `Bearer <token>`
-
----
-
-## 🧪 Testing
-
-### Manual Testing with cURL
-
-**Register User:**
-```bash
-curl -X POST http://localhost:3000/api/v1/auth/users/register \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Test User","email":"test@example.com","password":"password123"}'
+```
+DELETE /api/v1/admin/users/:id
 ```
 
-**Login:**
-```bash
-curl -X POST http://localhost:3000/api/v1/auth/users/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"password123"}'
-```
+| Param | Type   | Required | Description |
+| ----- | ------ | -------- | ----------- |
+| `id`  | string | Yes      | User ID     |
 
-**Submit Guest Quiz:**
-```bash
-curl -X POST http://localhost:3000/api/v1/quiz/guest/submit \
-  -H "Content-Type: application/json" \
-  -d '{"email":"guest@example.com","answers":{"q1":"Wedding","q2":"High-energy"}}'
-```
+**Response** `200 OK`
 
-**Get Guest Playlist:**
-```bash
-curl -X GET http://localhost:3000/api/v1/playlists/guest/playlist/QUIZ_ID
-```
-
-**Submit User Quiz (with token):**
-```bash
-curl -X POST http://localhost:3000/api/v1/quiz/user/submit \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{"answers":{"q1":"Wedding"},"user_type":"free"}'
-```
-
-**Get User Playlist (with token):**
-```bash
-curl -X GET http://localhost:3000/api/v1/playlists/user/playlist \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```json
+{
+  "success": true,
+  "message": "User deleted successfully"
+}
 ```
 
 ---
 
-## 🚀 Deployment
+#### 4. Get Playlists
 
-### Production Checklist
+Returns all playlists with user email, type, and date.
 
-- [ ] Set `NODE_ENV=production`
-- [ ] Use secure MongoDB connection (Atlas recommended)
-- [ ] Use strong `JWT_SECRET`
-- [ ] Configure CORS with specific origins
-- [ ] Set up Stripe webhook endpoint in Stripe dashboard
-- [ ] Verify email SMTP credentials
-- [ ] Ensure AI service is accessible
-- [ ] Set up process manager (PM2 recommended)
-- [ ] Configure reverse proxy (nginx)
-- [ ] Enable HTTPS/SSL
+```
+GET /api/v1/admin/playlists
+```
 
-### PM2 Setup
-```bash
-npm install -g pm2
-pm2 start src/server.js --name roryclerk-api
-pm2 save
-pm2 startup
+**Response** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Playlists fetched successfully",
+  "data": [
+    {
+      "user": "rakibul@example.com",
+      "playlistTitle": "Groovy Sunset Vibes",
+      "type": "Free",
+      "date": "2026-02-03T14:28:47.857Z",
+      "playlistId": "..."
+    }
+  ]
+}
 ```
 
 ---
 
-## 📝 Notes
+#### 5. Delete Playlist
 
-- Guest users receive default playlists (15 songs) via email
-- Premium playlists (50 songs) require Stripe payment (€9.00)
-- Webhook processing is asynchronous to ensure fast Stripe responses
-- All passwords are hashed with bcryptjs (12 rounds)
-- Quiz status tracks: `pending` → `processing` → `done` / `failed`
-- OTP expires in 10 minutes
-- JWT tokens are also set as HTTP-only cookies for additional security
+Deletes a playlist by ID.
 
----
+```
+DELETE /api/v1/admin/playlists/:id
+```
 
-## 📄 License
+| Param | Type   | Required | Description |
+| ----- | ------ | -------- | ----------- |
+| `id`  | string | Yes      | Playlist ID |
 
-ISC
+**Response** `200 OK`
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
-
-## 📞 Support
-
-For issues and questions, please open an issue in the repository.
+```json
+{
+  "success": true,
+  "message": "Playlist deleted successfully"
+}
+```
 
 ---
 
-**Built with ❤️ for Soundtrack My Night**
+#### 6. Update Admin Profile
 
+Updates the admin's name and/or profile image. Accepts `multipart/form-data`.
+
+```
+PATCH /api/v1/admin/profile
+```
+
+**Content-Type:** `multipart/form-data`
+
+| Field          | Type   | Required | Description                          |
+| -------------- | ------ | -------- | ------------------------------------ |
+| `name`         | string | No       | New display name                     |
+| `profileImage` | file   | No       | Profile image (JPEG, PNG, max 2 MB)  |
+
+**Response** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Profile updated successfully",
+  "data": {
+    "_id": "...",
+    "name": "Admin",
+    "email": "admin@gmail.com",
+    "profileImage": "/uploads/admin/1707564000000-photo.jpg",
+    "role": "admin"
+  }
+}
+```
+
+> The uploaded image is served statically at `GET /uploads/admin/<filename>`.
+
+---
+
+#### 7. Change Admin Password
+
+Changes the admin's password after verifying the current one.
+
+```
+PATCH /api/v1/admin/change-password
+```
+
+| Field             | Type   | Required | Description      |
+| ----------------- | ------ | -------- | ---------------- |
+| `currentPassword` | string | Yes      | Current password |
+| `newPassword`     | string | Yes      | New password     |
+
+**Request Body**
+
+```json
+{
+  "currentPassword": "oldPassword123",
+  "newPassword": "newSecurePassword456"
+}
+```
+
+**Response** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Password updated successfully"
+}
+```
+
+---
+
+## Project Structure
+
+```
+src/
+├── app.js                   # Express app setup, CORS, static files
+├── server.js                # Server bootstrap
+├── config/
+│   ├── constant.js          # Environment variable constants
+│   └── dbConnect.js         # MongoDB connection
+├── controllers/
+│   ├── adminDashobard.controller.js
+│   ├── payment.controller.js
+│   ├── playlist.controller.js
+│   ├── quiz.controller.js
+│   └── user.controller.js
+├── middlewares/
+│   ├── adminAuth.js         # Admin JWT auth middleware
+│   ├── auth.js              # User JWT auth middleware
+│   └── upload.js            # Multer file upload config
+├── models/
+│   ├── Playlist.js
+│   ├── Quiz.js
+│   └── User.js
+├── routes/
+│   ├── admin.routes.js
+│   ├── auth.routes.js
+│   ├── index.js
+│   ├── payment.routes.js
+│   ├── playlist.routes.js
+│   └── quiz.routes.js
+├── services/
+│   ├── adminDashboard.service.js
+│   ├── playlist.service.js
+│   ├── quiz.service.js
+│   └── user.service.js
+└── utils/
+    ├── email.js             # Nodemailer email sender
+    └── response.js          # Unified response helpers
+```
+
+---
+
+## Tech Stack
+
+| Layer       | Technology            |
+| ----------- | --------------------- |
+| Runtime     | Node.js               |
+| Framework   | Express 5             |
+| Database    | MongoDB + Mongoose    |
+| Auth        | JWT + bcryptjs        |
+| Payments    | Stripe                |
+| Email       | Nodemailer            |
+| File Upload | Multer                |
+| AI          | External AI endpoint  |
