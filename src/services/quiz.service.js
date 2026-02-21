@@ -63,45 +63,76 @@ export const QuizService = {
                 email,
                 "🎧 Your Free Soundtrack My Night Playlist Is Ready",
                 `
-                <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; color:#111;">
-              
-                  <h2>🎧 Here is your free <strong>Soundtrack My Night</strong> Spotify playlist</h2>
-              
-                  <p>
-                    This playlist is a preview of your chosen vibe — giving you a taste of how your night could sound.
-                  </p>
-              
-                  <p style="margin:20px 0;">
-                    👉 <a href="${playlistLink}" 
-                       style="background:#16a34a; color:#ffffff; padding:12px 20px; text-decoration:none; border-radius:8px; font-weight:600;">
-                      Listen to your playlist
-                    </a>
-                  </p>
-              
-                  <hr style="margin:30px 0;"/>
-              
-                  <h3>Secure your extended playlist — built for a full dancefloor</h3>
-              
-                  <p>
-                    Upgrade to the <strong>3-hour, 50-track Premium Playlist (€9)</strong>, designed to keep the energy high
-                    all night and easy to share with your partner, band, or DJ.
-                  </p>
-              
-                  <p>🎁 <strong>Free bonus:</strong><br/>
-                    Our <strong>Ultimate Guide to Wedding Entertainment in Ireland (PDF)</strong>
-                  </p>
-              
-                  <p>
-                    <strong>Soundtrack My Night</strong><br/>
-                    <em>Powered by DJ & SAX®</em>
-                  </p>
-              
-                  <p style="font-size:14px; color:#444;">
-                    👉 Ireland's multi award-winning wedding entertainment team<br/>
-                    ⭐ 5.0 ★ Google Rating<br/>
-                    🌐 soundtrackmynight.com | djandsax.ie
-                  </p>
-              
+                <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
+                
+                  <!-- Header -->
+                  <div style="background:linear-gradient(135deg,#1e1b4b 0%,#4f46e5 100%);padding:40px 30px;text-align:center;">
+                    <h1 style="color:#ffffff;font-size:22px;margin:0 0 8px;">🎧 Soundtrack My Night</h1>
+                    <p style="color:#c7d2fe;font-size:14px;margin:0;">Your personalised playlist is ready</p>
+                  </div>
+
+                  <!-- Body -->
+                  <div style="padding:32px 30px;">
+                    
+                    <h2 style="color:#111827;font-size:20px;margin:0 0 12px;">Your free playlist has arrived!</h2>
+                    <p style="color:#4b5563;font-size:15px;line-height:1.6;margin:0 0 24px;">
+                      This is a preview of your chosen vibe — giving you a taste of how your night could sound. Hit the button below to start listening.
+                    </p>
+
+                    <!-- CTA Button -->
+                    <div style="text-align:center;margin:0 0 32px;">
+                      <!--[if mso]>
+                      <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="${playlistLink}" style="height:50px;v-text-anchor:middle;width:260px;" arcsize="50%" fillcolor="#16a34a">
+                        <center style="color:#ffffff;font-family:'Segoe UI',Arial,sans-serif;font-size:16px;font-weight:bold;">▶ Listen to Your Playlist</center>
+                      </v:roundrect>
+                      <![endif]-->
+                      <!--[if !mso]><!-->
+                      <a href="${playlistLink}" style="display:inline-block;background:linear-gradient(135deg,#16a34a,#15803d);color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:50px;letter-spacing:0.3px;">
+                        ▶&nbsp; Listen to Your Playlist
+                      </a>
+                      <!--<![endif]-->
+                    </div>
+
+                    <!-- Divider -->
+                    <div style="border-top:1px solid #e5e7eb;margin:0 0 28px;"></div>
+
+                    <!-- Upgrade Section -->
+                    <div style="background:#f9fafb;border-radius:10px;padding:24px;border:1px solid #e5e7eb;">
+                      <h3 style="color:#111827;font-size:17px;margin:0 0 10px;">🔥 Want the full experience?</h3>
+                      <p style="color:#4b5563;font-size:14px;line-height:1.6;margin:0 0 16px;">
+                        Upgrade to the <strong>3-hour, 50-track Premium Playlist (€9)</strong> — designed to keep the energy high all night and easy to share with your partner, band, or DJ.
+                      </p>
+
+                      <!-- Upgrade Button -->
+                      <div style="text-align:center;margin:0 0 20px;">
+                        <a href="${playlistLink}" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:12px 32px;border-radius:50px;letter-spacing:0.3px;">
+                          ⚡&nbsp; Upgrade to Premium
+                        </a>
+                      </div>
+
+                      <div style="background:#fef3c7;border-radius:8px;padding:14px 16px;border-left:4px solid #f59e0b;">
+                        <p style="color:#92400e;font-size:13px;margin:0;">
+                          🎁 <strong>Free bonus with upgrade:</strong><br/>
+                          Our <strong>Ultimate Guide to Wedding Entertainment in Ireland (PDF)</strong>
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <div style="border-top:1px solid #e5e7eb;margin:28px 0;"></div>
+
+                    <!-- Footer Branding -->
+                    <div style="text-align:center;">
+                      <p style="color:#111827;font-size:15px;font-weight:700;margin:0 0 2px;">Soundtrack My Night</p>
+                      <p style="color:#6b7280;font-size:13px;margin:0 0 16px;font-style:italic;">Powered by DJ &amp; SAX®</p>
+                      <p style="color:#6b7280;font-size:12px;line-height:1.6;margin:0;">
+                        🏆 Ireland's multi award-winning wedding entertainment team<br/>
+                        ⭐ 5.0 Google Rating<br/>
+                        <a href="https://soundtrackmynight.com" style="color:#4f46e5;text-decoration:none;">soundtrackmynight.com</a> &nbsp;|&nbsp; <a href="https://djandsax.ie" style="color:#4f46e5;text-decoration:none;">djandsax.ie</a>
+                      </p>
+                    </div>
+
+                  </div>
                 </div>
                 `
             );
