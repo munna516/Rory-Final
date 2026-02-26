@@ -2,7 +2,7 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import constants from "../config/constant.js";
-import { sendEmail } from "../utils/email.js";
+import { sendEmail, emailSignatureHtml } from "../utils/email.js";
 
 export const userService = {
     createUser: async (name, email, password) => {
@@ -113,41 +113,43 @@ export const userService = {
             email,
             "🔐 Password Reset OTP",
             `
-            <div style="font-family:Arial, sans-serif; max-width:500px; margin:auto; padding:20px; color:#111;">
+            <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
               
-              <h2 style="text-align:center;">${title}</h2>
-          
-              <p>${greeting}</p>
-          
-              <p>
-                ${message}
-              </p>
-          
-              <div style="text-align:center; margin:30px 0;">
-                <span style="
-                  font-size:28px;
-                  letter-spacing:6px;
-                  font-weight:bold;
-                  background:#f3f4f6;
-                  padding:12px 24px;
-                  border-radius:8px;
-                  display:inline-block;
-                ">
-                  ${otp}
-                </span>
+              <!-- Header -->
+              <div style="background:linear-gradient(135deg,#1e1b4b 0%,#4f46e5 100%);padding:36px 30px;text-align:center;">
+                <h1 style="color:#ffffff;font-size:22px;margin:0 0 6px;">🔐 ${title}</h1>
+                <p style="color:#c7d2fe;font-size:14px;margin:0;">Soundtrack My Night</p>
               </div>
-          
-              <p>
-                This OTP will expire in <strong>10 minutes</strong>.  
-                ${warning}
-              </p>
-          
-              <hr style="margin:30px 0;" />
-          
-              <p style="font-size:13px; color:#555;">
-                ${footer}
-              </p>
-          
+
+              <!-- Body -->
+              <div style="padding:32px 30px;">
+                
+                <p style="color:#111827;font-size:16px;margin:0 0 8px;font-weight:600;">${greeting}</p>
+                <p style="color:#4b5563;font-size:15px;line-height:1.6;margin:0 0 24px;">
+                  ${message}
+                </p>
+
+                <!-- OTP Box -->
+                <div style="text-align:center;margin:0 0 28px;">
+                  <div style="display:inline-block;background:linear-gradient(135deg,#f9fafb,#f3f4f6);border:2px dashed #d1d5db;border-radius:12px;padding:20px 40px;">
+                    <span style="font-size:32px;letter-spacing:8px;font-weight:800;color:#111827;font-family:'Courier New',monospace;">
+                      ${otp}
+                    </span>
+                  </div>
+                </div>
+
+                <div style="background:#fef3c7;border-radius:8px;padding:14px 16px;border-left:4px solid #f59e0b;margin:0 0 24px;">
+                  <p style="color:#92400e;font-size:13px;margin:0;">
+                    ⏱️ This OTP will expire in <strong>10 minutes</strong>.<br/>
+                    ${warning}
+                  </p>
+                </div>
+
+                <p style="color:#4b5563;font-size:14px;margin:0 0 0;">Kind regards,</p>
+
+                ${emailSignatureHtml}
+
+              </div>
             </div>
             `
         );
@@ -200,5 +202,20 @@ export const userService = {
         user.isOTPVerified = false;
         await user.save();
         return { success: true, message: "Password reset successfully", status: 200 };
-    }
+    },
+    changePassword: async (id, currentPassword, newPassword) => {
+        const user = await User.findById(id).select("password");
+        if (!user) {
+            return { success: false, message: "User not found" };
+        }
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return { success: false, message: "Current password is incorrect" };
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+        user.password = hashedPassword;
+        user.passwordChangeAt = new Date();
+        await user.save();
+        return { success: true, message: "Password changed successfully" };
+    },
 }

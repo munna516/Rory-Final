@@ -1,7 +1,7 @@
 import Quiz from "../models/Quiz.js";
 import Playlist from "../models/Playlist.js";
 import constants from "../config/constant.js";
-import { sendEmail } from "../utils/email.js";
+import { sendEmail, emailSignatureHtml } from "../utils/email.js";
 import User from "../models/User.js";
 import Stripe from "stripe";
 import axios from "axios";
@@ -118,19 +118,9 @@ export const QuizService = {
                       </div>
                     </div>
 
-                    <!-- Divider -->
-                    <div style="border-top:1px solid #e5e7eb;margin:28px 0;"></div>
+                    <p style="color:#4b5563;font-size:14px;margin:24px 0 0;">Kind regards,</p>
 
-                    <!-- Footer Branding -->
-                    <div style="text-align:center;">
-                      <p style="color:#111827;font-size:15px;font-weight:700;margin:0 0 2px;">Soundtrack My Night</p>
-                      <p style="color:#6b7280;font-size:13px;margin:0 0 16px;font-style:italic;">Powered by DJ &amp; SAX®</p>
-                      <p style="color:#6b7280;font-size:12px;line-height:1.6;margin:0;">
-                        🏆 Ireland's multi award-winning wedding entertainment team<br/>
-                        ⭐ 5.0 Google Rating<br/>
-                        <a href="https://soundtrackmynight.com" style="color:#4f46e5;text-decoration:none;">soundtrackmynight.com</a> &nbsp;|&nbsp; <a href="https://djandsax.ie" style="color:#4f46e5;text-decoration:none;">djandsax.ie</a>
-                      </p>
-                    </div>
+                    ${emailSignatureHtml}
 
                   </div>
                 </div>

@@ -12,7 +12,8 @@ export const constants = {
     EMAIL_PASS: process.env.EMAIL_PASS,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
-    AI_ENDPOINT: process.env.AI_ENDPOINT
+    AI_ENDPOINT: process.env.AI_ENDPOINT,
+    BACKEND_URL: process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 3000}`
 }
 
 export default constants;

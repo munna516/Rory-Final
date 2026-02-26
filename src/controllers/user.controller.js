@@ -105,3 +105,26 @@ export const resetPassword = async (req, res) => {
         return errorResponse(res, status, error.message);
     }
 }
+
+export const changePassword = async (req, res) => {
+  
+    try {
+        const id = req.user._id;
+        if (!id) {
+            return errorResponse(res, 401, "Unauthorized: User not found");
+        }
+        const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword) {
+            return errorResponse(res, 400, "Current and new password are required");
+        }
+
+        const result = await userService.changePassword(id, currentPassword, newPassword);
+        if (result.success) {
+            return successResponse(res, 200, result.message, result);
+        }
+        return errorResponse(res, 400, result.message);
+    } catch (error) {
+        const status = error.status || 500;
+        return errorResponse(res, status, error.message);
+    }
+}
