@@ -128,3 +128,19 @@ export const changePassword = async (req, res) => {
         return errorResponse(res, status, error.message);
     }
 }
+
+export const updateProfile = async (req, res) => {
+    try {
+        const updates = {
+            name: req.body?.name,
+            profileImage: req.file ? `/uploads/user/${req.file.filename}` : undefined,
+        };
+        const result = await userService.updateProfile(req.user._id, updates);
+        if (result.success) {
+            return successResponse(res, 200, result.message, result.user);
+        }
+        return errorResponse(res, 400, result.message);
+    } catch (error) {
+        return errorResponse(res, 500, error.message);
+    }
+}

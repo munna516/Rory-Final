@@ -218,4 +218,29 @@ export const userService = {
         await user.save();
         return { success: true, message: "Password changed successfully" };
     },
+    updateProfile: async (userId, updates) => {
+        const allowedUpdates = {};
+        if (typeof updates.name === "string" && updates.name.trim()) {
+            allowedUpdates.name = updates.name.trim();
+        }
+        if (typeof updates.profileImage === "string") {
+            allowedUpdates.profileImage = updates.profileImage.trim();
+        }
+
+        if (!Object.keys(allowedUpdates).length) {
+            return { success: false, message: "No valid updates provided", status: 400 };
+        }
+
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { $set: allowedUpdates },
+            { new: true }
+        ).select("name email profileImage role");
+
+        if (!user) {
+            return { success: false, message: "User not found", status: 400 };
+        }
+
+        return { success: true, message: "Profile updated successfully", user, status: 200 };
+    },
 }
